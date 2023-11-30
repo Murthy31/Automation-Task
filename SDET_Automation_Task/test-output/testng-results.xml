@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results ignored="0" total="4" passed="4" failed="0" skipped="0">
+  <reporter-output>
+  </reporter-output>
+  <suite started-at="2023-11-30T14:59:36 IST" name="Default suite" finished-at="2023-11-30T14:59:36 IST" duration-ms="89">
+    <groups>
+    </groups>
+    <test started-at="2023-11-30T14:59:36 IST" name="Default test" finished-at="2023-11-30T14:59:36 IST" duration-ms="89">
+      <class name="Selenium_basic.TestNG_Priority">
+        <test-method signature="apple()[pri:-1, instance:Selenium_basic.TestNG_Priority@4dbb42b7]" started-at="2023-11-30T14:59:36 IST" name="apple" finished-at="2023-11-30T14:59:36 IST" duration-ms="12" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- apple -->
+        <test-method signature="xpple()[pri:-1, instance:Selenium_basic.TestNG_Priority@4dbb42b7]" started-at="2023-11-30T14:59:36 IST" name="xpple" finished-at="2023-11-30T14:59:36 IST" duration-ms="2" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- xpple -->
+        <test-method signature="fost()[pri:0, instance:Selenium_basic.TestNG_Priority@4dbb42b7]" started-at="2023-11-30T14:59:36 IST" name="fost" finished-at="2023-11-30T14:59:36 IST" duration-ms="1" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- fost -->
+        <test-method signature="aost()[pri:0, instance:Selenium_basic.TestNG_Priority@4dbb42b7]" started-at="2023-11-30T14:59:36 IST" name="aost" finished-at="2023-11-30T14:59:36 IST" depends-on-methods="Selenium_basic.TestNG_Priority.fost" duration-ms="1" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- aost -->
+      </class> <!-- Selenium_basic.TestNG_Priority -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>
