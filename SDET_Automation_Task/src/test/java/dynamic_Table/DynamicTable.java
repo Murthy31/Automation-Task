@@ -1,59 +1,130 @@
 package dynamic_Table;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DynamicTable {
-
-	public void test() {
+	
+	WebDriver driver = null;
+	WebDriverWait mywait = new WebDriverWait(driver,  Duration.ofSeconds(30));
+	SoftAssert softAssert = new SoftAssert();
+	
+	@Parameters({"browser", "url"})
+	@BeforeTest
+	public void launchbrowser(String browser, String url) throws Exception{
 		
-		System.setProperty("webdriver.chrome.driver", "path/to/chromedriver");
 
-		// Create a new instance of the Chrome driver
-		WebDriver driver = new ChromeDriver();
-
-		// Navigate to the given URL
-		driver.get("https://testpages.herokuapp.com/styled/tag/dynamic-table.html");
-
+		switch(browser) {
+		case "chrome":
+			System.setProperty("webdriver.chrome.driver", "C:\\Users\\snmur\\Downloads\\chromedriver_win32\\chromedriver.exe");
+			driver = new ChromeDriver();
+			break;
+		case "Edge":
+			System.setProperty("webdriver.chrome.driver", "C:\\Users\\snmur\\Downloads\\chromedriver_win32\\EdgeDriver.exe");
+			driver = new EdgeDriver();
+			break;
+		case "Firefox":
+			System.setProperty("webdriver.chrome.driver", "C:\\Users\\snmur\\Downloads\\chromedriver_win32\\GeckoDriver.exe");
+			driver = new FirefoxDriver();
+			break;
+		}
+		
+		//Maximize the screen
+		 driver.manage().window().maximize();
+		//Delete all the cookies
+		driver.manage().deleteAllCookies();
+		
+		driver.get(url);
+		 
+		Thread.sleep(1000);
+	}
+     
+	@Test
+	public void test() {
+ 
 		try {
-			// Step 2: Click on Table Data button
-			WebElement tableDataButton = driver.findElement(By.id("table-data-page"));
+			//wait until the page is loaded fully
+			mywait.until(ExpectedConditions.elementToBeClickable(By.xpath("//summary[text()='Table Data']")));
+			 driver.getTitle().equals("Table HTML Tag - JavaScript Created");
+			// Click on Table Data button
+			WebElement tableDataButton = driver.findElement(By.xpath("//summary[text()='Table Data']"));
 			tableDataButton.click();
 
-			// Step 3: Insert data in the input text box and click Refresh Table button
+			// Insert data in the input text box and click Refresh Table button
 			String jsonData = "[{\"name\" : \"Bob\", \"age\" : 20, \"gender\": \"male\"}, "
 					+ "{\"name\": \"George\", \"age\" : 42, \"gender\": \"male\"}, "
 					+ "{\"name\": \"Sara\", \"age\" : 42, \"gender\": \"female\"}, "
 					+ "{\"name\": \"Conor\", \"age\" : 40, \"gender\": \"male\"}, "
 					+ "{\"name\": \"Jennifer\", \"age\" : 42, \"gender\": \"female\"}]";
 
-			WebElement inputTextBox = driver.findElement(By.id("data"));
-			inputTextBox.sendKeys(jsonData);
+			// Wait till the input text box is appeared and then enter the json data
+			WebElement textBox = mywait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//textarea[@id='jsondata']")));
+			textBox.sendKeys(jsonData);
 
-			WebElement refreshTableButton = driver.findElement(By.id("load"));
+			// Click on "Refresh Table" button once data is entered in the input text field
+			WebElement refreshTableButton = driver.findElement(By.xpath("//button[text()='Refresh Table']"));
 			refreshTableButton.click();
 
-			// Step 4: Get the data from the UI table
-			List<WebElement> tableRows = driver.findElements(By.xpath("//table[@id='table']//tbody/tr"));
+			// Get the data from the table
+			List<WebElement> tableRows = driver.findElements(By.xpath("//table[@id='dynamictable']/tr"));
+			
+			
+			// tableRows is a List<WebElement> containing the rows of the table
+			for (int i = 1; i < tableRows.size(); i++) {
+			    // Get the text content of the i-th row and split it into an array
+			    List<WebElement> columns = tableRows.get(i).findElements(By.xpath("td"));
+			    
+			    // Code for splitting the actual Json data			    
+			    ObjectMapper objectMapper = new ObjectMapper();
+		        JsonNode[] expectedData = objectMapper.readValue(jsonData, JsonNode[].class);
+		        
+		        // Get the expected data for the i-th row from the expectedData array
+		        String expectedName = expectedData[i - 1].get("name").asText();
+	            String expectedAge = String.valueOf(expectedData[i - 1].get("age").asInt());
+	            String expectedGender = expectedData[i - 1].get("gender").asText();
 
-			// Step 5: Assert the entered data with the data in the UI table
-			for (int i = 0; i < tableRows.size(); i++) {
-				String[] rowData = tableRows.get(i).getText().split("\\s+");
-				String expectedData = jsonData.split("\\s+")[i];
-				assert rowData[0].equals(expectedData) : "Data mismatch at row " + (i + 1);
+	            // Compare each element in the row with the corresponding element in expectedData
+	            softAssert.assertEquals(columns.get(0).getText(), expectedName, "Name mismatch at row " + i);
+	            softAssert.assertEquals(columns.get(1).getText(), expectedAge,"Age mismatch at row " + i);
+	            softAssert.assertEquals(columns.get(2).getText(), expectedGender,"Gender mismatch at row " + i);
+			   
 			}
 
-			System.out.println("Automation script executed successfully!");
+			System.out.println("Dynamic Table functionality has been verified successfully!");
 
-		} catch (Exception e) {
+		} 
+		catch (Exception e) 
+		{
 			e.printStackTrace();
-		} finally {
-			// Close the browser window
-			driver.quit();
+		} 
+		finally {
+			softAssert.assertAll();
 		}
+		
+	}
+	
+	@AfterTest
+	public void closeBrowser()
+	{
+		// Closes all the instance of the browser
+		driver.quit();
 	}
 }
