@@ -1,5 +1,7 @@
 package dynamic_Table;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +59,7 @@ public class DynamicTable {
 		Thread.sleep(1000);
 	}
      
+	
 	@Test
 	public void test() {
  
@@ -67,17 +70,13 @@ public class DynamicTable {
 			// Click on Table Data button
 			WebElement tableDataButton = driver.findElement(By.xpath("//summary[text()='Table Data']"));
 			tableDataButton.click();
-
-			// Insert data in the input text box and click Refresh Table button
-			String jsonData = "[{\"name\" : \"Bob\", \"age\" : 20, \"gender\": \"male\"}, "
-					+ "{\"name\": \"George\", \"age\" : 42, \"gender\": \"male\"}, "
-					+ "{\"name\": \"Sara\", \"age\" : 42, \"gender\": \"female\"}, "
-					+ "{\"name\": \"Conor\", \"age\" : 40, \"gender\": \"male\"}, "
-					+ "{\"name\": \"Jennifer\", \"age\" : 42, \"gender\": \"female\"}]";
+			
+			// Read test data from JSON file
+            JsonNode testData = readTestDataFromJson("C:\\Users\\snmur\\eclipse-workspace\\SDET_Automation_Task\\src\\test\\resources\\TestData\\Data.json");
 
 			// Wait till the input text box is appeared and then enter the json data
 			WebElement textBox = mywait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//textarea[@id='jsondata']")));
-			textBox.sendKeys(jsonData);
+			textBox.sendKeys(testData.toString());
 
 			// Click on "Refresh Table" button once data is entered in the input text field
 			WebElement refreshTableButton = driver.findElement(By.xpath("//button[text()='Refresh Table']"));
@@ -92,14 +91,12 @@ public class DynamicTable {
 			    // Get the text content of the i-th row and split it into an array
 			    List<WebElement> columns = tableRows.get(i).findElements(By.xpath("td"));
 			    
-			    // Code for splitting the actual Json data			    
-			    ObjectMapper objectMapper = new ObjectMapper();
-		        JsonNode[] expectedData = objectMapper.readValue(jsonData, JsonNode[].class);
+			  
 		        
 		        // Get the expected data for the i-th row from the expectedData array
-		        String expectedName = expectedData[i - 1].get("name").asText();
-	            String expectedAge = String.valueOf(expectedData[i - 1].get("age").asInt());
-	            String expectedGender = expectedData[i - 1].get("gender").asText();
+		        String expectedName = testData.get(i - 1).get("name").asText();
+                String expectedAge = String.valueOf(testData.get(i - 1).get("age").asInt());
+                String expectedGender = testData.get(i - 1).get("gender").asText();
 
 	            // Compare each element in the row with the corresponding element in expectedData
 	            softAssert.assertEquals(columns.get(0).getText(), expectedName, "Name mismatch at row " + i);
@@ -127,4 +124,14 @@ public class DynamicTable {
 		// Closes all the instance of the browser
 		driver.quit();
 	}
+	
+	private static JsonNode readTestDataFromJson(String filePath) {
+        try {
+            // Read JSON file
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readTree(new File(filePath));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read test data from JSON file", e);
+        }
+    }
 }
